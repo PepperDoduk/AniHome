@@ -680,7 +680,7 @@
             // 반별 차트
             let classChartHTML = `
                 <div class="chart-card">
-                    <h3>반별 잔류 인원</h3>
+                    <h3>반별 잔류 인원 ${row[4]}</h3>
                     <div class="chart-wrapper">
                         <div class="bar-chart">
             `;
@@ -698,6 +698,33 @@
                 `;
             });
             
+            classChartHTML += `
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 반별 차트
+            classChartHTML = `
+                <div class="chart-card">
+                    <h3>반별 잔류 인원 ${row[5]}</h3>
+                    <div class="chart-wrapper">
+                        <div class="bar-chart">
+            `;
+
+            const maxClassValue = Math.max(...Object.values(classData), 1);
+            Object.keys(classData).sort().forEach(classNum => {
+                const height = (classData[classNum] / maxClassValue) * 150;
+                classChartHTML += `
+                    <div class="bar-group">
+                        <div class="bar" style="height: ${height}px">
+                            <span class="bar-value">${classData[classNum]}</span>
+                        </div>
+
+                    </div>
+                `;
+            });
+
             classChartHTML += `
                         </div>
                     </div>
