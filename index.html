@@ -712,7 +712,7 @@
                         <div class="bar-chart">
             `;
 
-            const maxClassValue = Math.max(...Object.values(classData), 1);
+            
             Object.keys(classData).sort().forEach(classNum => {
                 const height = (classData[classNum] / maxClassValue) * 150;
                 classChartHTML += `
