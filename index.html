@@ -11,6 +11,12 @@
             box-sizing: border-box;
         }
 
+        .t-container {    
+                display: flex;
+                justify-content: space-evenly;
+                margin-top: 20px;        
+        }
+
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -122,8 +128,7 @@
 
         /* 통계 카드 */
         .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            width: 100%;
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -156,8 +161,7 @@
 
         /* 차트 컨테이너 */
         .charts-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            width: 100%;
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -419,20 +423,20 @@
         <div class="control-panel">
             <div class="controls-row">
                 <div class="control-group">
-                    <label class="control-label">학년-과 선택</label>
+                    <label class="control-label">학년-반 선택</label>
                     <select id="classSelect">
-                        <option value="1-1">1학년 만창(1-1)</option>
-                        <option value="1-2">1학년 애니(1-2)</option>
-                        <option value="1-3">1학년 영상(1-3)</option>
-                        <option value="1-4">1학년 컴게(1-4)</option>
-                        <option value="2-1">2학년 만창(2-1)</option>
-                        <option value="2-2">2학년 애니(2-2)</option>
-                        <option value="2-3">2학년 영상(2-3)</option>
-                        <option value="2-4">2학년 컴게(2-4)</option>
-                        <option value="3-1">3학년 만창(3-1)</option>
-                        <option value="3-2">3학년 애니(3-2)</option>
-                        <option value="3-3">3학년 영상(3-3)</option>
-                        <option value="3-4">3학년 컴게(3-4)</option>
+                        <option value="1-1">1학년 1반</option>
+                        <option value="1-2">1학년 2반</option>
+                        <option value="1-3">1학년 3반</option>
+                        <option value="1-4">1학년 4반</option>
+                        <option value="2-1">2학년 1반</option>
+                        <option value="2-2">2학년 2반</option>
+                        <option value="2-3">2학년 3반</option>
+                        <option value="2-4">2학년 4반</option>
+                        <option value="3-1">3학년 1반</option>
+                        <option value="3-2">3학년 2반</option>
+                        <option value="3-3">3학년 3반</option>
+                        <option value="3-4">3학년 4반</option>
                     </select>
                 </div>
                 <div class="control-group">
@@ -450,13 +454,16 @@
         <div id="update-time" class="last-update"></div>
         
         <!-- 통계 카드 -->
-        <div class="stats-container" id="statsContainer"></div>
-        <!-- 차트 컨테이너 -->
-        <div class="charts-container" id="chartsContainer"></div>
+        <div class="t-container">
+            <div class="stats-container" id="statsContainer"></div>
+            <!-- 차트 컨테이너 -->
+            <div class="charts-container" id="chartsContainer"></div>
+        </div>
     </div>
 
     <script>
         let day1, day2;
+
         // GID 맵핑
         const GIDmap = {
             "1-1": "1775231096",
@@ -532,6 +539,14 @@
                     // 데이터 파싱
                     const headers = rows[2];
                     const students = [];
+
+                    const list = 
+                    [
+                        "만창",
+                        "애니",
+                        "영상",
+                        "게임"
+                    ];
                     
                     // 학생 데이터 파싱
                     for (let i = 3; i < rows.length; i++) {
@@ -539,25 +554,27 @@
                         if (row[0] && row[0] !== '.' && row[3]) {
                             students.push({
                                 grade: row[0],
-                                class: row[1],
+                                class: list[parseInt(row[1]) - 1],
                                 number: row[2],
                                 name: row[3],
                                 thu: row[4] || 'X',
                                 fri: row[5] || 'X'
                             });
                         }
-                        day1 = row[4];
-                        day2 = row[5];
                     }
-                    
+
                     currentData = students;
                     allStudents = [...students];
-                    
+                      
+                    day1 = headers[4];
+                    day2 = headers[5];
+
+
                     // UI 업데이트
                     updateStats(students);
                     updateCharts(students);
                     createTable(headers, students);
-                    
+
                     // 마지막 업데이트 시간
                     const now = new Date();
                     const timeString = now.toLocaleTimeString('ko-KR');
@@ -646,30 +663,27 @@
                 if (!gradeData[grade]) gradeData[grade] = 0;
                 if (!classData[classNum]) classData[classNum] = 0;
                 
-                if (student.thu.toUpperCase() === 'O' ||
-                    student.fri.toUpperCase() === 'O') gradeData[grade]++;                   
+                if (student.thu.toUpperCase() === 'O') gradeData[grade]++;                   
                     
-                if (student.thu.toUpperCase() === 'O' ||
-                    student.fri.toUpperCase() === 'O') classData[classNum]++;
+                if (student.fri.toUpperCase() === 'O') classData[classNum]++;
             });
             
             // 학년별 차트
             let gradeChartHTML = `
                 <div class="chart-card">
-                    <h3>학년별 잔류 인원</h3>
+                    <h3>잔류 인원 ${day1}</h3>
                     <div class="chart-wrapper">
                         <div class="bar-chart">
             `;
             
             const maxGradeValue = Math.max(...Object.values(gradeData), 1);
             Object.keys(gradeData).sort().forEach(grade => {
-                const height = (gradeData[grade] / maxGradeValue) * 150;
+                const height = gradeData[grade] * 10;
                 gradeChartHTML += `
                     <div class="bar-group">
                         <div class="bar" style="height: ${height}px">
                             <span class="bar-value">${gradeData[grade]}</span>
                         </div>
-                        <span class="bar-label">${grade}학년</span>
                     </div>
                 `;
             });
@@ -679,55 +693,28 @@
                     </div>
                 </div>
             `;
+            document.getElementById('statsContainer').innerHTML = gradeChartHTML;
             
             // 반별 차트
             let classChartHTML = `
                 <div class="chart-card">
-                    <h3>반별 잔류 인원 ${student.thu}</h3>
+                    <h3>잔류 인원 ${day2}</h3>
                     <div class="chart-wrapper">
                         <div class="bar-chart">
             `;
             
             const maxClassValue = Math.max(...Object.values(classData), 1);
             Object.keys(classData).sort().forEach(classNum => {
-                const height = (classData[classNum] / maxClassValue) * 150;
+                const height = classData[classNum] * 10;
                 classChartHTML += `
                     <div class="bar-group">
                         <div class="bar" style="height: ${height}px">
                             <span class="bar-value">${classData[classNum]}</span>
                         </div>
-
                     </div>
                 `;
             });
             
-            classChartHTML += `
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // 반별 차트
-            classChartHTML = `
-                <div class="chart-card">
-                    <h3>반별 잔류 인원 ${student.fri}</h3>
-                    <div class="chart-wrapper">
-                        <div class="bar-chart">
-            `;
-
-            
-            Object.keys(classData).sort().forEach(classNum => {
-                const height = (classData[classNum] / maxClassValue) * 150;
-                classChartHTML += `
-                    <div class="bar-group">
-                        <div class="bar" style="height: ${height}px">
-                            <span class="bar-value">${classData[classNum]}</span>
-                        </div>
-
-                    </div>
-                `;
-            });
-
             classChartHTML += `
                         </div>
                     </div>
@@ -743,7 +730,6 @@
                     <table id="dataTable">
                         <thead>
                             <tr>
-
                                 <th>${headers[2] || '번호'}</th>
                                 <th>${headers[3] || '성명'}</th>
                                 <th>${headers[4] || '목요일'}</th>
@@ -768,7 +754,6 @@
                     
                     tableHTML += `
                         <tr data-name="${student.name}">
-
                             <td>${student.number}</td>
                             <td class="student-name">${student.name}</td>
                             <td><span class="${thuClass}">${thuText}</span></td>
